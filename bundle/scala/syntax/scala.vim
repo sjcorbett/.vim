@@ -1,22 +1,22 @@
 " Vim syntax file
-" Language:    Scala
-" Maintainer:  Stefan Matthias Aust
-" Last Change: 2006 Apr 13
+" Language   : Scala (http://scala-lang.org/)
+" Maintainers: Stefan Matthias Aust, Julien Wetterwald
+" Last Change: 2007 June 13
 
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
-  " finish
+  finish
 endif
 
 syn case match
 syn sync minlines=50
 
 " most Scala keywords
-syn keyword scalaKeyword abstract case catch do else extends final finally for if implicit match new null override private protected requires return sealed super this throw try type while with yield
+syn keyword scalaKeyword abstract case catch do else extends final finally for forSome if implicit lazy match new null override private protected requires return sealed super this throw try type while with yield
 syn match scalaKeyword "=>"
 syn match scalaKeyword "<-"
-syn match scalaKeyword "_"
+syn match scalaKeyword "\<_\>"
 
 syn match scalaOperator ":\{2,\}" "this is not a type
 
@@ -62,14 +62,24 @@ syn case ignore
 syn include @scalaHtml syntax/html.vim
 unlet b:current_syntax
 syn case match
-syn region scalaDocComment start="/\*\*" end="\*/" contains=scalaDocTags,scalaTodo,@scalaHtml
+syn region scalaDocComment start="/\*\*" end="\*/" contains=scalaDocTags,scalaTodo,@scalaHtml keepend
 syn region scalaDocTags start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}" contained
 syn match scalaDocTags "@[a-z]\+" contained
 
+syn match scalaEmptyString "\"\""
+
+" multi-line string literals
+syn region scalaMultiLineString start="\"\"\"" end="\"\"\"" contains=scalaUnicode
+syn match scalaUnicode "\\u[0-9a-fA-F]\{4}" contained
+
 " string literals with escapes
-syn region scalaString start="\"" skip="\\\"" end="\"" contains=scalaStringEscape
-syn match scalaStringEscape "\\u[0-9a-f][0-9a-f][0-9a-f][0-9a-f]" contained
+syn region scalaString start="\"[^"]" skip="\\\"" end="\"" contains=scalaStringEscape " TODO end \n or not?
+syn match scalaStringEscape "\\u[0-9a-fA-F]\{4}" contained
 syn match scalaStringEscape "\\[nrfvb\\\"]" contained
+
+" symbol and character literals
+syn match scalaSymbol "'[_a-zA-Z0-9][_a-zA-Z0-9]*\>"
+syn match scalaChar "'[^'\\]'\|'\\.'\|'\\u[0-9a-fA-F]\{4}'"
 
 " number literals
 syn match scalaNumber "\<\(0[0-7]*\|0[xX]\x\+\|\d\+\)[lL]\=\>"
@@ -78,15 +88,15 @@ syn match scalaNumber "\<\d\+[eE][-+]\=\d\+[fFdD]\=\>"
 syn match scalaNumber "\<\d\+\([eE][-+]\=\d\+\)\=[fFdD]\>"
 
 " xml literals
-syn match scalaXml "<[a-zA-Z][^>]*/>" contains=scalaXmlQuote,scalaXmlEscape
-syn region scalaXml start="<[a-zA-Z][^>]*[^/]>" end="</[^>]\+>;"he=e-1 contains=scalaXmlEscape,scalaXmlQuote
-syn region scalaXmlEscape matchgroup=scalaXmlEscapeSpecial start="{" matchgroup=scalaXmlEscapeSpecial end="}" contained contains=scalaKeyword,scalaType,scalaString
+syn match scalaXmlTag "<[a-zA-Z]\_[^>]*/>" contains=scalaXmlQuote,scalaXmlEscape,scalaXmlString
+syn region scalaXmlString start="\"" end="\"" contained
+syn match scalaXmlStart "<[a-zA-Z]\_[^>]*>" contained contains=scalaXmlQuote,scalaXmlEscape,scalaXmlString
+syn region scalaXml start="<\([a-zA-Z]\_[^>]*\_[^/]\|[a-zA-Z]\)>" matchgroup=scalaXmlStart end="</\_[^>]\+>" contains=scalaXmlEscape,scalaXmlQuote,scalaXml,scalaXmlStart,scalaXmlComment
+syn region scalaXmlEscape matchgroup=scalaXmlEscapeSpecial start="{" matchgroup=scalaXmlEscapeSpecial end="}" contained contains=TOP
 syn match scalaXmlQuote "&[^;]\+;" contained
+syn match scalaXmlComment "<!--\_[^>]*-->" contained
 
-"syn include @scalaXml syntax/xml.vim
-"unlet b:current_syntax
-"syn region scalaXml start="<[a-zA-Z][^>]*>" skip="<!--[^>]*-->" end="</[^>]>;" contains=@scalaXml,scalaXmlEscape
-
+syn sync fromstart
 
 " map Scala groups to standard groups
 hi link scalaKeyword Keyword
@@ -95,8 +105,13 @@ hi link scalaImport Include
 hi link scalaBoolean Boolean
 hi link scalaOperator Normal
 hi link scalaNumber Number
+hi link scalaEmptyString String
 hi link scalaString String
+hi link scalaChar String
+hi link scalaMultiLineString String
 hi link scalaStringEscape Special
+hi link scalaSymbol Special
+hi link scalaUnicode Special
 hi link scalaComment Comment
 hi link scalaLineComment Comment
 hi link scalaDocComment Comment
@@ -105,10 +120,13 @@ hi link scalaTodo Todo
 hi link scalaType Type
 hi link scalaTypeSpecializer scalaType
 hi link scalaXml String
-hi link scalaXmlEnd String
+hi link scalaXmlTag Include
+hi link scalaXmlString String
+hi link scalaXmlStart Include
 hi link scalaXmlEscape Normal
 hi link scalaXmlEscapeSpecial Special
 hi link scalaXmlQuote Special
+hi link scalaXmlComment Comment
 hi link scalaDef Keyword
 hi link scalaVar Keyword
 hi link scalaVal Keyword
@@ -124,9 +142,10 @@ hi link scalaConstructorSpecializer scalaConstructor
 
 let b:current_syntax = "scala"
 
+" you might like to put these lines in your .vimrc
+"
 " customize colors a little bit (should be a different file)
-hi scalaNew gui=underline
-hi scalaMethodCall gui=italic
-hi scalaValName gui=underline
-hi scalaVarName gui=underline
-
+" hi scalaNew gui=underline
+" hi scalaMethodCall gui=italic
+" hi scalaValName gui=underline
+" hi scalaVarName gui=underline

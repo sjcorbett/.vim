@@ -1,5 +1,5 @@
-
 " Use pathogen to manage other plugins
+filetype on
 filetype off
 call pathogen#runtime_append_all_bundles()
 filetype plugin indent on
@@ -24,32 +24,27 @@ set showcmd
 set hidden
 set wildmenu
 set wildmode=list:longest
-set wildignore=*~,*.pyc,*.o,*.cmi,*.cmx,*.cmo,*.annot,*.aux,*.bbl,*.blg,*.out,*.toc,*.pdf,*.swp
 set ttyfast
 set ruler
 set backspace=indent,eol,start
 set laststatus=2
-" set autochdir
 set mouse=a
-
 set completeopt=longest,menuone " longest common prefix
-
 set laststatus=2 " always on
 set statusline=%<%F\ %h%m%r%=%-14.(%l,%c%V%)\ %P
-
-" (not til 7.3)
-" set relativenumber
-" set undofile
-
-" history
 set history=500
+set background=light
+
+syn on
+
+set wildignore+=*~,*.pyc,*.o,*.cmi,*.cmx,*.cmo,*.annot
+set wildignore+=*.aux,*.bbl,*.blg,*.out,*.toc,*.pdf,*.swp
+set wildignore+=*.class
 
 " Leader
 let mapleader = ","
 
 " Searching
-nnoremap / /\v
-vnoremap / /\v
 set ignorecase
 set smartcase
 set incsearch
@@ -82,9 +77,12 @@ inoremap <F1> <ESC>
 nnoremap <F1> <ESC>
 vnoremap <F1> <ESC>
 
+" Go away, Ex-mode
+nnoremap Q <nop>
+
 " NERD Tree
 map <F2> :NERDTreeToggle<cr>
-let NERDTreeIgnore=['.vim$', '\~$', '.pyc$', '.o$', '.cm[ixo]$', '.annot$']
+let NERDTreeIgnore=['\.vim$', '\~$', '\.pyc$', '\.o$', '\.cm[ixo]$', '\.annot$', '\.class$']
 
 " No shift
 nnoremap ; :
@@ -104,16 +102,10 @@ nnoremap <leader>w <C-w>v<C-w>l
 " Quick ack
 nnoremap <leader>a :Ack 
 
-" TagList
+" Key binds
 nnoremap <leader>t :TlistToggle<cr>
 nnoremap <leader>n :NERDTreeToggle<cr>
-
-" Command-t
 nnoremap <leader>f :CommandT<cr>
-
-" Datalog and Links highlighting
-au BufNewFile,BufRead *.datalog set filetype=datalog
-au BufNewFile,BufRead *.links set filetype=links
 
 " MiniBufExplorer
 let g:miniBufExplMapWindowNavVim = 1
@@ -131,13 +123,17 @@ set complete-=k complete+=k
 
 colorscheme desert
 
+" Suppress Ruby warning shown when running vim.
+let g:LustyJugglerSuppressRubyWarning = 1
+
 " GUI 
 if has('gui_running')
-    set guifont=Bitstream\ Vera\ Sans\ Mono\ 8
+    set guifont=Menlo\ 9
 
     set guioptions-=m " Farewell menu
     set guioptions-=T " Farewell toolbar
     set lines=73 columns=115 " 100 for latex?
+    set autochdir
 
     set go-=l
     set go-=L
@@ -147,4 +143,6 @@ if has('gui_running')
     highlight SpellBad term=underline gui=undercurl guisp=Orange
 endif
 
+" Forgive Brooklyn.
+:au BufNewFile,BufRead *.bom set filetype=yaml
 
